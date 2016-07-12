@@ -1,0 +1,10 @@
+server:
+    host: localhost
+    port: 5911
+database:
+    type: mysql
+    host: localhost
+    user: udplogger
+    pass: udplogger
+    name: udplogger
+    model_path: /etc/udplogger/models
