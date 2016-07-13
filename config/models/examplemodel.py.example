@@ -1,4 +1,0 @@
-from udplogger.models.baselog import *
-
-class ExampleModel(BaseLog):
-    data = Field(Text(), default='')

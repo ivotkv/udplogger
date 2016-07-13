@@ -7,4 +7,3 @@ database:
     user: udplogger
     pass: udplogger
     name: udplogger
-    model_path: /etc/udplogger/models

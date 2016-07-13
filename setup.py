@@ -42,14 +42,12 @@ setup(
         "udp", "logger", "logging", "log"
     ],
     packages=[
-        'udplogger',
-        'udplogger/models'
+        'udplogger'
     ],
     install_requires=[
         'PyYAML',
         'argparse',
         'simplejson',
-        'sqlalchemy',
-        'Elixir'
+        'sqlalchemy>=0.9.1'
     ]
 )
