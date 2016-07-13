@@ -12,18 +12,19 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # 
 
-import os
 import sys
-import signal
-import socket
-import threading
-from SocketServer import UDPServer, ThreadingMixIn, BaseRequestHandler
-from sqlalchemy.exc import SQLAlchemyError
-from elixir import session
-import db
 import json
 import yaml
 import argparse
+import signal
+import threading
+from SocketServer import UDPServer, ThreadingMixIn, BaseRequestHandler
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import create_engine
+
 
 signals = {signal.SIGTERM: 'SIGTERM',
            signal.SIGINT: 'SIGINT',
@@ -32,24 +33,49 @@ signals = {signal.SIGTERM: 'SIGTERM',
 threading.stack_size(256 * 1024)
 
 
+class Database(object):
+
+    def __init__(self, config):
+        self.url = "{0}://{1}:{2}@{3}/{4}".format(config['type'],
+                                                  config['user'],
+                                                  config['pass'],
+                                                  config['host'],
+                                                  config['name'])
+        self.engine = create_engine(self.url, pool_recycle=3600)
+        self.automap = automap_base()
+        self.automap.prepare(self.engine, reflect=True)
+        self.sessionmaker = sessionmaker(bind=self.engine, autoflush=False)
+
+    def session(self):
+        return self.sessionmaker()
+
+    def model(self, name):
+        return getattr(self.automap.classes, name.lower(), None)
+
+
 class RequestHandler(BaseRequestHandler):
 
+    database = None
+
     def handle(self):
-        session.close()
+        session = self.database.session()
 
         src_ip = self.client_address[0]
         raw_data = self.request[0].strip()
 
         try:
             data = json.loads(raw_data)
-            model = db.get_model(data['model'])
-            entry = model(src_ip = src_ip, **data['data'])
+            model = self.database.model(data['model'])
+            if isinstance(getattr(model, 'src_ip', None), InstrumentedAttribute):
+                data['data']['src_ip'] = src_ip
+            session.add(model(**data['data']))
         except Exception as e:
-            ErrorLog = db.get_model('ErrorLog')
-            entry = ErrorLog(src_ip = src_ip,
-                             error = e.__class__.__name__,
-                             description = str(e),
-                             data = raw_data)
+            error = self.database.model('udplogger_errors')
+            if error is not None:
+                entry = session.add(error(src_ip=src_ip,
+                                          error=e.__class__.__name__,
+                                          description=str(e),
+                                          data=raw_data))
 
         try:
             session.commit()
@@ -84,7 +110,7 @@ class Server(object):
 
     def start(self):
         # Set up the db
-        db.init(self.config['database'])
+        RequestHandler.database = Database(self.config['database'])
 
         # Set up the server
         self.server = ThreadedUDPServer((self.host, self.port), RequestHandler)
@@ -105,12 +131,11 @@ class Server(object):
 
 
 def run():
-    arg_parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
+    arg_parser = argparse.ArgumentParser()
     arg_parser.description = 'UDP logging server.'
-    arg_parser.add_argument('--config', metavar='FILE',
-                            default='/etc/udplogger/config.yaml',
+    arg_parser.add_argument('-c', '--config', metavar='FILE',
+                            default='config.yaml',
                             help='path to config file (default: %(default)s)')
-
     args = arg_parser.parse_args()
 
     server = Server(args.config)
