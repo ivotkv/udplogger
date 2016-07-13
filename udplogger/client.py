@@ -24,8 +24,8 @@ class Client(object):
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def send(self, model, data):
-        send_data = json.dumps({'model': model, 'data': data})
+    def send(self, table, data):
+        send_data = json.dumps({'table': table, 'data': data})
         self.socket.sendto(send_data, (self.host, self.port))
         
 

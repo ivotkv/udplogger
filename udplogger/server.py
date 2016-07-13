@@ -22,6 +22,7 @@ from SocketServer import UDPServer, ThreadingMixIn, BaseRequestHandler
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine
 
@@ -32,6 +33,11 @@ signals = {signal.SIGTERM: 'SIGTERM',
 
 threading.stack_size(256 * 1024)
 
+class InvalidTableName(Exception):
+    pass
+
+class TableNotFound(Exception):
+    pass
 
 class Database(object):
 
@@ -49,8 +55,11 @@ class Database(object):
     def session(self):
         return self.sessionmaker()
 
-    def model(self, name):
-        return getattr(self.automap.classes, name.lower(), None)
+    def table(self, name):
+        table = getattr(self.automap.classes, name.lower(), None)
+        if table is not None and not isinstance(table, DeclarativeMeta):
+            raise InvalidTableName(u"'{0}' is a reserved name and cannot be a table name".format(name))
+        return table
 
 
 class RequestHandler(BaseRequestHandler):
@@ -65,22 +74,26 @@ class RequestHandler(BaseRequestHandler):
 
         try:
             data = json.loads(raw_data)
-            model = self.database.model(data['model'])
-            if isinstance(getattr(model, 'src_ip', None), InstrumentedAttribute):
+            table = self.database.table(data['table'])
+            if table is None:
+                raise TableNotFound(u"'{0}' does not exist or is not a viable SQLAlchemy table".format(data['table']))
+            if isinstance(getattr(table, 'src_ip', None), InstrumentedAttribute):
                 data['data']['src_ip'] = src_ip
-            session.add(model(**data['data']))
+            session.add(table(**data['data']))
         except Exception as e:
-            error = self.database.model('udplogger_errors')
+            error = self.database.table('udplogger_errors')
             if error is not None:
                 entry = session.add(error(src_ip=src_ip,
                                           error=e.__class__.__name__,
-                                          description=str(e),
+                                          description=unicode(e),
                                           data=raw_data))
+            else:
+                sys.stderr.write(u"{0}: {1}: {2}\n".format(e.__class__.__name__, e, raw_data).encode('utf-8'))
 
         try:
             session.commit()
         except SQLAlchemyError as e:
-            sys.stderr.write("Failed to commit data from {0}: '{1}'\nException: {2}\n".format(src_ip, raw_data, e))
+            sys.stderr.write(u"{0}: {1}: {2}\n".format(e.__class__.__name__, e, raw_data).encode('utf-8'))
             session.rollback()
 
 
