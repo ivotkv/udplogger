@@ -17,7 +17,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 setup(
     name='udplogger',
@@ -27,7 +27,7 @@ setup(
     author='Ivo Tzvetkov',
     author_email='ivotkv@gmail.com',
     license='MIT',
-    url='http://github.com/ivotkv/udplogger'
+    url='http://github.com/ivotkv/udplogger',
     download_url='https://github.com/ivotkv/udplogger/tarball/v' + __version__,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
