@@ -45,9 +45,9 @@ if __name__ == "__main__":
     index = 0
     while True:
         msg = "Message {0}".format(index)
-        print "Sending to TestLog: '{0}'".format(msg)
+        print "Sending to 'test': '{0}'".format(msg)
 
-        client.send('TestLog', {'data': msg})
+        client.send('test', {'data': msg})
 
         index += 1
         time.sleep(1)

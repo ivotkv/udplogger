@@ -7,3 +7,5 @@ database:
     user: udplogger
     pass: udplogger
     name: udplogger
+web:
+    port: 8888
