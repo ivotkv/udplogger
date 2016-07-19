@@ -22,17 +22,22 @@ from client import Client
 
 class MainHandler(tornado.web.RequestHandler):
 
-    def initialize(self, host, port):
+    def initialize(self, host, port, default_table, force_default_table=False):
         self.udp = Client(host, port)
+        self.default_table = default_table
+        self.force_default_table = force_default_table
 
     def get(self):
         try:
-            self.udp.send(table=self.get_argument('table'),
-                          data=json.loads(self.get_argument('data')))
+            if self.force_default_table or 't' not in self.request.arguments:
+                table = self.default_table
+            else:
+                table = self.get_argument('t')
+            self.udp.send(table=table, data=json.loads(self.get_argument('d')))
         except Exception as e:
             print u"{0}: {1}: {2}".format(e.__class__.__name__, e, self.request.arguments)
 
-        # return a 1x1 GIF with appropriate headers
+        # Return a 1x1 GIF with appropriate headers
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.set_header('Pragma', 'no-cache')
@@ -54,7 +59,9 @@ def run():
     app = tornado.web.Application([
         (r".*", MainHandler, {
             'host': config['server']['host'],
-            'port': config['server']['port']
+            'port': config['server']['port'],
+            'default_table': config['web']['default_table'],
+            'force_default_table': config['web']['force_default_table']
         })
     ])
     app.listen(config['web']['port'])

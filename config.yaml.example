@@ -9,3 +9,5 @@ database:
     name: udplogger
 web:
     port: 8888
+    default_table: 'web'
+    force_default_table: false
