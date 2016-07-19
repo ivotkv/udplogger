@@ -17,7 +17,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 setup(
     name='udplogger',
@@ -49,6 +49,7 @@ setup(
         'argparse',
         'simplejson',
         'sqlalchemy>=0.9.1',
-        'tornado'
+        'tornado',
+        'httpagentparser'
     ]
 )

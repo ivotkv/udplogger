@@ -11,3 +11,4 @@ web:
     port: 8888
     default_table: 'web'
     force_default_table: false
+    include_request_info: false

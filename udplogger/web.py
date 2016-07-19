@@ -15,17 +15,20 @@
 import yaml
 import argparse
 import simplejson as json
-import tornado.ioloop
-import tornado.web
+import httpagentparser
+from tornado.web import RequestHandler, Application
+from tornado.ioloop import IOLoop
 from client import Client
 
 
-class MainHandler(tornado.web.RequestHandler):
+class MainHandler(RequestHandler):
 
-    def initialize(self, host, port, default_table, force_default_table=False):
+    def initialize(self, host, port, default_table, force_default_table=False,
+                   include_request_info=False):
         self.udp = Client(host, port)
         self.default_table = default_table
         self.force_default_table = force_default_table
+        self.include_request_info = include_request_info
 
     def get(self):
         try:
@@ -33,7 +36,14 @@ class MainHandler(tornado.web.RequestHandler):
                 table = self.default_table
             else:
                 table = self.get_argument('t')
-            self.udp.send(table=table, data=json.loads(self.get_argument('d')))
+            data = json.loads(self.get_argument('d'))
+            if self.include_request_info:
+                data['host'] = self.request.host
+                data['src_ip'] = self.request.remote_ip
+                agent_str = self.request.headers.get('User-Agent', '')
+                agent_info = httpagentparser.simple_detect(agent_str)
+                data.update(zip(('agent_os', 'agent_browser'), agent_info))
+            self.udp.send(table=table, data=data)
         except Exception as e:
             print u"{0}: {1}: {2}".format(e.__class__.__name__, e, self.request.arguments)
 
@@ -56,18 +66,19 @@ def run():
 
     config = yaml.load(file(args.config, 'r'))
 
-    app = tornado.web.Application([
+    app = Application([
         (r".*", MainHandler, {
             'host': config['server']['host'],
             'port': config['server']['port'],
             'default_table': config['web']['default_table'],
-            'force_default_table': config['web']['force_default_table']
+            'force_default_table': config['web']['force_default_table'],
+            'include_request_info': config['web']['include_request_info']
         })
     ])
-    app.listen(config['web']['port'])
+    app.listen(config['web']['port'], xheaders=True)
 
     print "Server listening on port {0}".format(config['web']['port'])
-    tornado.ioloop.IOLoop.current().start()
+    IOLoop.current().start()
 
 
 if __name__ == "__main__":

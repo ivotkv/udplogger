@@ -25,6 +25,7 @@ pip install argparse
 pip install simplejson
 pip install "sqlalchemy>=0.9.1"
 pip install tornado
+pip install httpagentparser
 
 # install database drivers
 pip install MySQL-python
