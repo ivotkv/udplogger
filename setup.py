@@ -17,7 +17,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-__version__ = '1.2.1'
+__version__ = '1.2.0'
 
 setup(
     name='udplogger',
