@@ -21,7 +21,6 @@ import threading
 from SocketServer import UDPServer, ThreadingMixIn, BaseRequestHandler
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine
@@ -69,21 +68,18 @@ class RequestHandler(BaseRequestHandler):
     def handle(self):
         session = self.database.session()
 
-        src_ip = self.client_address[0]
         raw_data = self.request[0].strip()
 
         try:
-            data = json.loads(raw_data)
             table = self.database.table(data['table'])
             if table is None:
                 raise TableNotFound(u"'{0}' does not exist or is not a viable SQLAlchemy table".format(data['table']))
-            if isinstance(getattr(table, 'src_ip', None), InstrumentedAttribute):
-                data['data']['src_ip'] = src_ip
+            data = json.loads(raw_data)
             session.add(table(**data['data']))
         except Exception as e:
             error = self.database.table('udplogger_errors')
             if error is not None:
-                entry = session.add(error(src_ip=src_ip,
+                entry = session.add(error(src_ip=self.client_address[0],
                                           error=e.__class__.__name__,
                                           description=unicode(e),
                                           data=raw_data))
@@ -139,7 +135,7 @@ class Server(object):
 
         print "Server listening on {0}:{1}".format(self.host, self.port)
         while True:
-            # TODO emit stats to graphite (thread count, etc...)
+            # TODO periodically log stats (packets received, thread count, etc...)
             signal.pause()
 
 

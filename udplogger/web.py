@@ -39,7 +39,7 @@ class MainHandler(RequestHandler):
             data = json.loads(self.get_argument('d'))
             if self.include_request_info:
                 data['host'] = self.request.host
-                data['src_ip'] = self.request.remote_ip
+                data['remote_ip'] = self.request.remote_ip
                 agent_str = self.request.headers.get('User-Agent', '')
                 agent_info = httpagentparser.simple_detect(agent_str)
                 data.update(zip(('agent_os', 'agent_browser'), agent_info))
