@@ -18,6 +18,7 @@ import yaml
 import argparse
 import signal
 import threading
+from datetime import datetime
 from SocketServer import UDPServer, ThreadingMixIn, BaseRequestHandler
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.session import sessionmaker
@@ -79,7 +80,8 @@ class RequestHandler(BaseRequestHandler):
         except Exception as e:
             error = self.database.table('udplogger_errors')
             if error is not None:
-                entry = session.add(error(src_ip=self.client_address[0],
+                entry = session.add(error(date=str(datetime.now()),
+                                          remote_ip=self.client_address[0],
                                           error=e.__class__.__name__,
                                           description=unicode(e),
                                           data=raw_data))
