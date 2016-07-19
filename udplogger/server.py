@@ -71,10 +71,10 @@ class RequestHandler(BaseRequestHandler):
         raw_data = self.request[0].strip()
 
         try:
+            data = json.loads(raw_data)
             table = self.database.table(data['table'])
             if table is None:
                 raise TableNotFound(u"'{0}' does not exist or is not a viable SQLAlchemy table".format(data['table']))
-            data = json.loads(raw_data)
             session.add(table(**data['data']))
         except Exception as e:
             error = self.database.table('udplogger_errors')
