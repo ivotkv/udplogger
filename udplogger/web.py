@@ -29,10 +29,16 @@ class MainHandler(tornado.web.RequestHandler):
         try:
             self.udp.send(table=self.get_argument('table'),
                           data=json.loads(self.get_argument('data')))
-            self.write('OK')
         except Exception as e:
             print u"{0}: {1}: {2}".format(e.__class__.__name__, e, self.request.arguments)
-            self.write('ERR')
+
+        # return a 1x1 GIF with appropriate headers
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        self.set_header('Pragma', 'no-cache')
+        self.set_header('X-Content-Type-Options', 'nosniff')
+        self.set_header('Content-Type', 'image/gif')
+        self.write('GIF89a\x01\x00\x01\x00\x80\xff\x00\xff\xff\xff\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
 
 
 def run():
