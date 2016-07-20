@@ -12,3 +12,7 @@ web:
     default_table: 'web'
     force_default_table: false
     include_request_info: false
+    token:
+        enforce: false
+        data: 'user'
+        salt: 'your-salt'

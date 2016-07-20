@@ -16,19 +16,28 @@ import yaml
 import argparse
 import simplejson as json
 import httpagentparser
+from hashlib import md5
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
 from client import Client
 
 
+class NotPermitted(Exception):
+    pass
+
+
 class MainHandler(RequestHandler):
 
     def initialize(self, host, port, default_table, force_default_table=False,
-                   include_request_info=False):
+                   include_request_info=False, enforce_token=False,
+                   token_data=None, token_salt=None):
         self.udp = Client(host, port)
         self.default_table = default_table
         self.force_default_table = force_default_table
         self.include_request_info = include_request_info
+        self.enforce_token = enforce_token
+        self.token_data = token_data
+        self.token_salt = token_salt
 
     def get(self):
         try:
@@ -37,6 +46,14 @@ class MainHandler(RequestHandler):
             else:
                 table = self.get_argument('t')
             data = json.loads(self.get_argument('d'))
+            if self.enforce_token:
+                token = md5(':'.join([
+                            self.token_salt,
+                            self.request.headers.get('User-Agent', ''),
+                            data.get(self.token_data, '')
+                        ])).hexdigest()
+                if data['token'] != token:
+                    raise NotPermitted('invalid token')
             if self.include_request_info:
                 data['host'] = self.request.host
                 data['remote_ip'] = self.request.remote_ip
@@ -72,7 +89,10 @@ def run():
             'port': config['server']['port'],
             'default_table': config['web']['default_table'],
             'force_default_table': config['web']['force_default_table'],
-            'include_request_info': config['web']['include_request_info']
+            'include_request_info': config['web']['include_request_info'],
+            'enforce_token': config['web']['token']['enforce'],
+            'token_data': config['web']['token']['data'],
+            'token_salt': config['web']['token']['salt']
         })
     ])
     app.listen(config['web']['port'], xheaders=True)
