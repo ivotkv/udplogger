@@ -16,6 +16,7 @@ import yaml
 import argparse
 import simplejson as json
 import httpagentparser
+from datetime import datetime
 from hashlib import md5
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
@@ -56,6 +57,7 @@ class MainHandler(RequestHandler):
                     raise NotPermitted('invalid token')
                 del data['token']
             if self.include_request_info:
+                data['date'] = str(datetime.now())
                 data['host'] = self.request.host
                 data['remote_ip'] = self.request.remote_ip
                 data['agent_string'] = self.request.headers.get('User-Agent', '')
