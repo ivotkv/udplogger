@@ -57,8 +57,8 @@ class MainHandler(RequestHandler):
             if self.include_request_info:
                 data['host'] = self.request.host
                 data['remote_ip'] = self.request.remote_ip
-                agent_str = self.request.headers.get('User-Agent', '')
-                agent_info = httpagentparser.simple_detect(agent_str)
+                data['agent_string'] = self.request.headers.get('User-Agent', '')
+                agent_info = httpagentparser.simple_detect(data['agent_string'])
                 data.update(zip(('agent_os', 'agent_browser'), agent_info))
             self.udp.send(table=table, data=data)
         except Exception as e:
