@@ -54,6 +54,7 @@ class MainHandler(RequestHandler):
                         ])).hexdigest()
                 if data['token'] != token:
                     raise NotPermitted('invalid token')
+                del data['token']
             if self.include_request_info:
                 data['host'] = self.request.host
                 data['remote_ip'] = self.request.remote_ip
