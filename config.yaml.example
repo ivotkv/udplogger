@@ -15,4 +15,4 @@ web:
     token:
         enforce: false
         data: 'user'
-        salt: 'your-salt'
+        salt: 'your-token-salt'
