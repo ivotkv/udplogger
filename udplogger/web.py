@@ -48,11 +48,11 @@ class MainHandler(RequestHandler):
                 table = self.get_argument('t')
             data = json.loads(self.get_argument('d'))
             if self.enforce_token:
-                token = md5(':'.join([
+                token = md5(u':'.join([
                             self.token_salt,
                             self.request.headers.get('User-Agent', ''),
                             data.get(self.token_data, '')
-                        ])).hexdigest()
+                        ]).encode('utf-8')).hexdigest()
                 if data['token'] != token:
                     raise NotPermitted('invalid token')
                 del data['token']
