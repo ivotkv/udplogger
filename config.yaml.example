@@ -2,11 +2,11 @@ server:
     host: localhost
     port: 5911
 database:
-    type: mysql
+    type: postgresql
     host: localhost
-    user: udplogger
-    pass: udplogger
-    name: udplogger
+    user: udplog
+    pass: udplog
+    name: udplog
 web:
     port: 8888
     default_table: 'web'

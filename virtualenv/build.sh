@@ -28,6 +28,7 @@ pip install tornado
 pip install httpagentparser
 
 # install database drivers
+pip install psycopg2
 pip install MySQL-python
 
 # symlink udplogger into virtualenv for convenience
