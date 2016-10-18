@@ -7,7 +7,8 @@ cd $(dirname "${BASH_SOURCE[0]}")
 
 PYTHON_VERSION=${PYTHON_VERSION:-"2.7"}
 
-DIRNAME="python-$PYTHON_VERSION"
+TARGET="python-$PYTHON_VERSION"
+DIRNAME="$TARGET-$(date +%Y%m%d-%H%M%S)"
 
 # build clean virtualenv
 rm -rf $DIRNAME
@@ -33,3 +34,7 @@ pip install MySQL-python
 
 # symlink udplogger into virtualenv for convenience
 ln -s ../../../../../udplogger $DIRNAME/lib/python$PYTHON_VERSION/site-packages/
+
+# switch symlink
+rm -rf $TARGET
+ln -s $DIRNAME $TARGET
