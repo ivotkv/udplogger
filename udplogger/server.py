@@ -91,7 +91,7 @@ class RequestHandler(BaseRequestHandler):
 
         try:
             session.commit()
-        except SQLAlchemyError as e:
+        except Exception as e:
             sys.stderr.write(u"{0}: {1}: {2}\n".format(e.__class__.__name__, e, raw_data).encode('utf-8'))
             session.rollback()
 
