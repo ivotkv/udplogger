@@ -47,10 +47,10 @@ class Database(object):
                                                   config['user'],
                                                   config['pass'],
                                                   config['host'],
-                                                  config['name'])
+                                                  config['database'])
         self.engine = create_engine(self.url, pool_recycle=3600)
         self.automap = automap_base()
-        self.automap.prepare(self.engine, reflect=True)
+        self.automap.prepare(self.engine, schema=config['schema'], reflect=True)
         self.sessionmaker = sessionmaker(bind=self.engine, autoflush=False)
 
     def session(self):

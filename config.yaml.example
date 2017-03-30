@@ -6,7 +6,8 @@ database:
     host: localhost
     user: udplog
     pass: udplog
-    name: udplog
+    database: udplog
+    schema:
 web:
     port: 8888
     default_table: 'web'
