@@ -24,4 +24,4 @@ An example use case would be to populate a database for analytics with [Caravel]
 
 Developed and maintained by [Ivo Tzvetkov](https://github.com/ivotkv) at [ChallengeU](http://challengeu.com). Twitter: [@ivotkv](https://twitter.com/ivotkv). Gmail: ivotkv.
 
-Copyright (c) 2016 Ivaylo Tzvetkov, ChallengeU. Released under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Copyright (c) 2016 Ivo Tzvetkov. Released under the terms of the [MIT License](https://opensource.org/licenses/MIT).
