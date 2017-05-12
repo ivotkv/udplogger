@@ -20,4 +20,4 @@ UDPLogger uses [SQLAlchemy](http://www.sqlalchemy.org/) to handle database conne
 
 ## About
 
-Developed and maintained by [Ivo Tzvetkov](https://github.com/ivotkv) at [ChallengeU](http://challengeu.com).
+Developed and maintained by [Ivo Tzvetkov](http://ivotkv.net) at [ChallengeU](http://challengeu.com).
