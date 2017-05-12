@@ -5,15 +5,13 @@ set -x
 
 cd $(dirname "${BASH_SOURCE[0]}")
 
-PYTHON_VERSION=${PYTHON_VERSION:-"2.7"}
-
-TARGET="python-$PYTHON_VERSION"
-DIRNAME="$TARGET-$(date +%Y%m%d-%H%M%S)"
+PYTHON=${PYTHON:-"python"}
+VENV="venv"
 
 # build clean virtualenv
-rm -rf $DIRNAME
-virtualenv --python=python$PYTHON_VERSION $DIRNAME
-source $DIRNAME/bin/activate
+rm -rf $VENV
+virtualenv --python=$PYTHON $VENV
+source $VENV/bin/activate
 
 # install standard packages
 pip install --upgrade pip
@@ -31,10 +29,3 @@ pip install httpagentparser
 # install database drivers
 pip install psycopg2
 pip install MySQL-python
-
-# symlink udplogger into virtualenv for convenience
-ln -s ../../../../../udplogger $DIRNAME/lib/python$PYTHON_VERSION/site-packages/
-
-# switch symlink
-rm -rf $TARGET
-ln -s $DIRNAME $TARGET
