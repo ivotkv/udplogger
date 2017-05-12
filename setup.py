@@ -17,7 +17,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-__version__ = '1.2.5'
+__version__ = '1.3.0'
 
 setup(
     name='udplogger',
@@ -34,9 +34,10 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.7",
-        #"Programming Language :: Python :: 3.3",
-        #"Programming Language :: Python :: 3.4",
-        #"Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6"
     ],
     keywords=[
         "udp", "logger", "logging", "log"
@@ -47,7 +48,6 @@ setup(
     install_requires=[
         'PyYAML',
         'argparse',
-        'simplejson',
         'sqlalchemy>=0.9.1',
         'tornado',
         'httpagentparser'

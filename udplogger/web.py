@@ -12,22 +12,19 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # 
 
-import os
-import sys
+from __future__ import print_function, unicode_literals
 import yaml
 import argparse
-import simplejson as json
+import json
 import httpagentparser
 from datetime import datetime
 from hashlib import md5
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
-from client import Client
-
+from .client import Client
 
 class NotPermitted(Exception):
     pass
-
 
 class MainHandler(RequestHandler):
 
@@ -50,7 +47,7 @@ class MainHandler(RequestHandler):
                 table = self.get_argument('t')
             data = json.loads(self.get_argument('d'))
             if self.enforce_token:
-                token = md5(u':'.join([
+                token = md5(':'.join([
                             self.token_salt,
                             self.request.headers.get('User-Agent', ''),
                             data.get(self.token_data, '')
@@ -67,7 +64,7 @@ class MainHandler(RequestHandler):
                 data.update(zip(('agent_os', 'agent_browser'), agent_info))
             self.udp.send(table=table, data=data)
         except Exception as e:
-            print u"{0}: {1}: {2}".format(e.__class__.__name__, e, self.request.arguments)
+            print("{0}: {1}: {2}".format(e.__class__.__name__, e, self.request.arguments))
 
         # Return a 1x1 GIF with appropriate headers
         self.set_header('Access-Control-Allow-Origin', '*')
@@ -77,7 +74,6 @@ class MainHandler(RequestHandler):
         self.set_header('Content-Type', 'image/gif')
         self.write('GIF89a\x01\x00\x01\x00\x80\xff\x00\xff\xff\xff\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
 
-
 def run():
     arg_parser = argparse.ArgumentParser()
     arg_parser.description = 'A simple web server to forward data to UDPLogger.'
@@ -86,7 +82,8 @@ def run():
                             help='path to config file (default: %(default)s)')
     args = arg_parser.parse_args()
 
-    config = yaml.load(file(args.config, 'r'))
+    with open(args.config, 'r') as file:
+        config = yaml.load(file)
 
     app = Application([
         (r".*", MainHandler, {
@@ -102,13 +99,8 @@ def run():
     ])
     app.listen(config['web']['port'], xheaders=True)
 
-    print "Server listening on port {0}".format(config['web']['port'])
+    print("Server listening on port {0}".format(config['web']['port']))
     IOLoop.current().start()
 
-
 if __name__ == "__main__":
-
-    # Reopen stdout as unbuffered for immediate logging
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
     run()

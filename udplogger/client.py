@@ -12,7 +12,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # 
 
-import sys
+from __future__ import print_function, unicode_literals
 import time
 import socket
 import json
@@ -28,7 +28,6 @@ class Client(object):
         send_data = json.dumps({'table': table, 'data': data})
         self.socket.sendto(send_data, (self.host, self.port))
         
-
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
     arg_parser.description = 'Test client.'
@@ -39,13 +38,13 @@ if __name__ == "__main__":
 
     args = arg_parser.parse_args()
 
-    print "Server address: {0}:{1}".format(args.host, args.port)
+    print("Server address: {0}:{1}".format(args.host, args.port))
     client = Client(args.host, args.port)
 
     index = 0
     while True:
         msg = "Message {0}".format(index)
-        print "Sending to 'test': '{0}'".format(msg)
+        print("Sending to 'test': '{0}'".format(msg))
 
         client.send('test', {'data': msg})
 

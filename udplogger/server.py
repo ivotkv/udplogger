@@ -12,7 +12,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # 
 
-import os
+from __future__ import print_function, unicode_literals
 import sys
 import json
 import yaml
@@ -20,13 +20,15 @@ import argparse
 import signal
 import threading
 from datetime import datetime
-from SocketServer import UDPServer, ThreadingMixIn, BaseRequestHandler
+try:
+    from socketserver import UDPServer, ThreadingMixIn, BaseRequestHandler
+except ImportError:
+    from SocketServer import UDPServer, ThreadingMixIn, BaseRequestHandler
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine
-
 
 signals = {signal.SIGTERM: 'SIGTERM',
            signal.SIGINT: 'SIGINT',
@@ -59,9 +61,8 @@ class Database(object):
     def table(self, name):
         table = getattr(self.automap.classes, name.lower(), None)
         if table is not None and not isinstance(table, DeclarativeMeta):
-            raise InvalidTableName(u"'{0}' is a reserved name and cannot be a table name".format(name))
+            raise InvalidTableName("'{0}' is a reserved name and cannot be a table name".format(name))
         return table
-
 
 class RequestHandler(BaseRequestHandler):
 
@@ -76,7 +77,7 @@ class RequestHandler(BaseRequestHandler):
             data = json.loads(raw_data)
             table = self.database.table(data['table'])
             if table is None:
-                raise TableNotFound(u"'{0}' does not exist or is not a viable SQLAlchemy table".format(data['table']))
+                raise TableNotFound("'{0}' does not exist or is not a viable SQLAlchemy table".format(data['table']))
             session.add(table(**data['data']))
         except Exception as e:
             error = self.database.table('udplogger_errors')
@@ -84,26 +85,25 @@ class RequestHandler(BaseRequestHandler):
                 entry = session.add(error(date=str(datetime.now()),
                                           remote_ip=self.client_address[0],
                                           error=e.__class__.__name__,
-                                          description=unicode(e),
+                                          description=str(e),
                                           data=raw_data))
             else:
-                sys.stderr.write(u"{0}: {1}: {2}\n".format(e.__class__.__name__, e, raw_data).encode('utf-8'))
+                sys.stderr.write("{0}: {1}: {2}\n".format(e.__class__.__name__, e, raw_data).encode('utf-8'))
 
         try:
             session.commit()
         except Exception as e:
-            sys.stderr.write(u"{0}: {1}: {2}\n".format(e.__class__.__name__, e, raw_data).encode('utf-8'))
+            sys.stderr.write("{0}: {1}: {2}\n".format(e.__class__.__name__, e, raw_data).encode('utf-8'))
             session.rollback()
-
 
 class ThreadedUDPServer(ThreadingMixIn, UDPServer):
     pass
 
-
 class Server(object):
     def __init__(self, config):
-        if isinstance(config, basestring):
-            config = yaml.load(file(config, 'r'))
+        if isinstance(config, str):
+            with open(config, 'r') as file:
+                config = yaml.load(file)
         self.config = config
         self.host = self.config['server']['host']
         self.port = self.config['server']['port']
@@ -114,8 +114,8 @@ class Server(object):
             signal.signal(signum, self.sighandler)
 
     def sighandler(self, signum, frame):
-        print "Active threads: {0}".format(threading.active_count())
-        print "Received {0}, exiting!".format(signals[signum])
+        print("Active threads: {0}".format(threading.active_count()))
+        print("Received {0}, exiting!".format(signals[signum]))
         if self.server:
             self.server.shutdown()
         sys.exit(-signum)
@@ -136,11 +136,10 @@ class Server(object):
         server_thread.daemon = True
         server_thread.start()
 
-        print "Server listening on {0}:{1}".format(self.host, self.port)
+        print("Server listening on {0}:{1}".format(self.host, self.port))
         while True:
             # TODO periodically log stats (packets received, thread count, etc...)
             signal.pause()
-
 
 def run():
     arg_parser = argparse.ArgumentParser()
@@ -153,10 +152,5 @@ def run():
     server = Server(args.config)
     server.start()
 
-
 if __name__ == "__main__":
-
-    # Reopen stdout as unbuffered for immediate logging
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
     run()
