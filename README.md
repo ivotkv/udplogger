@@ -8,9 +8,7 @@ UDPLogger was developed to allow you to decouple the saving of events and statis
 
 UDP was chosen because it is lightweight and risk-free to emit and while it does not have the same reliability guarantees as TCP, it is more than adequate for non-critical event logging.
 
-UDPLogger uses [SQLAlchemy](http://www.sqlalchemy.org/) to handle database connections and has been tested with MySQL, though other databases supported by SQLAlchemy should work as well. In the future, [Druid](http://druid.io/) will be supported as well.
-
-An example use case would be to populate a database for analytics with [Caravel](http://airbnb.io/caravel/).
+UDPLogger uses [SQLAlchemy](http://www.sqlalchemy.org/) to handle database connections and has been tested with PostgreSQL and MySQL, though other databases supported by SQLAlchemy should work as well.
 
 ## Quick Start
 
@@ -22,6 +20,4 @@ An example use case would be to populate a database for analytics with [Caravel]
 
 ## About
 
-Developed and maintained by [Ivo Tzvetkov](https://github.com/ivotkv) at [ChallengeU](http://challengeu.com). Twitter: [@ivotkv](https://twitter.com/ivotkv). Gmail: ivotkv.
-
-Copyright (c) 2016 Ivo Tzvetkov. Released under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Developed and maintained by [Ivo Tzvetkov](https://github.com/ivotkv) at [ChallengeU](http://challengeu.com).
