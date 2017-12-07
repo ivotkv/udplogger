@@ -21,7 +21,10 @@ from datetime import datetime
 from hashlib import md5
 from tornado.web import RequestHandler, Application
 from tornado.ioloop import IOLoop
-from .client import Client
+try:
+    from .client import Client
+except ValueError:
+    from client import Client
 
 class NotPermitted(Exception):
     pass
