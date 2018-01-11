@@ -22,8 +22,6 @@ pip install pytest
 pip install PyYAML 
 pip install argparse
 pip install "sqlalchemy>=0.9.1"
-pip install tornado
-pip install httpagentparser
 
 # install database drivers
 pip install psycopg2

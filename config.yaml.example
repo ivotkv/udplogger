@@ -8,12 +8,3 @@ database:
     pass: udplog
     database: udplog
     schema:
-web:
-    port: 8888
-    default_table: 'web'
-    force_default_table: false
-    include_request_info: false
-    token:
-        enforce: false
-        data: 'user'
-        salt: 'your-token-salt'
